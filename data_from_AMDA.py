@@ -30,7 +30,6 @@ Expected input command line :
     
     with 2 args - uses default model and data
     $ python data_from_AMDA.py start_time end_time 
-
 """
 
 #token_url = 'http://amda.irap.omp.eu/php/rest/auth.php'
@@ -293,7 +292,12 @@ def var_to_AMDA_file(ref_var, filepath):
     t_end = var['epoch'].shift(-1)
     labels = var['follow_class'].drop(var.index[var.count()[0]-1])
     new_class['t_start'] = t_start.drop(t_start.index[t_start.count()-1])
-    new_class['t_end'] = t_end
+    
+    new_class['t_start'] = pd.to_datetime(new_class['t_start'],unit='s')
+    new_class['t_end'] = pd.to_datetime(t_end,unit='s')
+
+    new_class['t_start'] = [timestamp_to_AMDAdate(new_class['t_start'].iloc[i]) for i in range(new_class.count().max())]
+    new_class['t_end'] = [timestamp_to_AMDAdate(new_class['t_end'].iloc[i]) for i in range(new_class.count().max())]
     new_class['label'] = labels
     return new_class
 """
@@ -309,11 +313,12 @@ def timestamp_to_AMDAdate(timestamp):
 #"""
 #start_time = '2008-01-03T05:30:00'
 #end_time = '2008-01-04T09:30:00'
-scl_data = pd.read_csv(scale_data_path)
-ANN = mdl.load_model(model_path)
-label_AMDA, var_AMDA, cross_AMDA = mex_pred_from_AMDA(ANN,scl_data.drop('label',axis=1),120,600,start_time,end_time,3600*24, amda_old=False)
 
-crossings_to_AMDA_file(cross_AMDA,'./TEST_amdacrossfile.txt')
+#scl_data = pd.read_csv(scale_data_path)
+#ANN = mdl.load_model(model_path)
+#label_AMDA, var_AMDA, cross_AMDA = mex_pred_from_AMDA(ANN,scl_data.drop('label',axis=1),120,600,start_time,end_time,3600*24, amda_old=False)
+#
+#crossings_to_AMDA_file(cross_AMDA,'./TEST_amdacrossfile.txt')
 
 
 

@@ -24,12 +24,7 @@ val_sys_arg = np.array(sys.argv)
 exec_file_name = val_sys_arg[0]
 """
 Expected input command line : 
-    with 4 args
-    $ python data_from_AMDA.py model_file_path start_time end_time scale_data_path
-    
-    with 2 args - uses default model and data
-    $ python data_from_AMDA.py start_time end_time 
-
+TO DO
 """
 
 """
