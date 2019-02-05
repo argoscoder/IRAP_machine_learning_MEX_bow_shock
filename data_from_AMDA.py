@@ -24,8 +24,13 @@ val_sys_arg = np.array(sys.argv)
 
 exec_file_name = val_sys_arg[0]
 """
-Expected input command line
-$ python data_from_AMDA.py model_file_path start_time end_time scale_data_path
+Expected input command line : 
+    with 4 args
+    $ python data_from_AMDA.py model_file_path start_time end_time scale_data_path
+    
+    with 2 args - uses default model and data
+    $ python data_from_AMDA.py start_time end_time 
+
 """
 
 #token_url = 'http://amda.irap.omp.eu/php/rest/auth.php'
@@ -33,15 +38,21 @@ $ python data_from_AMDA.py model_file_path start_time end_time scale_data_path
 
 
 token_url = 'http://amda.irap.omp.eu/php/rest/auth.php'
+
+#param_url for old amda
 #get_param_url = 'http://amda-old.irap.omp.eu/php/rest/getParameter.php'
+#param url for new amda
 get_param_url = 'http://amda.irap.omp.eu/php/rest/getParameter.php'
 
+"""
+Username and password
+"""
 username = 'noel'
 password = 'nirapass'
 
-#start_time = '2005-01-01T00:00:00'
-#end_time = '2005-01-02T00:00:00'
-
+"""
+Default start and end times
+"""
 start_time = '2008-01-03T05:30:00'
 end_time = '2008-01-03T09:30:00'
 
@@ -194,6 +205,7 @@ def mex_data_from_AMDA(start_time, end_time, amda_old=True):
     #MEX params in old AMDA
 #    mex_params = ['mex_xyz','mex_h_dens','mex_h_vel','ws_totels_1','ws_totels_6','ws_totels_8','ws_rho_mex','mex_h_qual']
     #MEX params in new AMDA
+    #to look for in your workspace parameters, these are the paramID from AMDA
     mex_params = ['mex_xyz_mso','mex_h_dens','mex_h_vel','ws_0','ws_1','ws_12','ws_4','mex_h_qual']
     #Columns names
     mex_df_cols = ['epoch', 'x', 'y', 'z', 'density_IMA', 'vx_IMA', 'vy_IMA', 'vz_IMA','totels_1', 'totels_6', 'totels_8', 'rho', 'IMA_flag']
@@ -301,7 +313,7 @@ scl_data = pd.read_csv(scale_data_path)
 ANN = mdl.load_model(model_path)
 label_AMDA, var_AMDA, cross_AMDA = mex_pred_from_AMDA(ANN,scl_data.drop('label',axis=1),120,600,start_time,end_time,3600*24, amda_old=False)
 
-crossings_to_AMDA_file(cross_AMDA,'./TEST8CROSS8AMDASAVED.txt')
+crossings_to_AMDA_file(cross_AMDA,'./TEST_amdacrossfile.txt')
 
 
 
