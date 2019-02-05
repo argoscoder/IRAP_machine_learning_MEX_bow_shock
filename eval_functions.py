@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import numpy as np
 import seaborn as sns
-from fastdtw import fastdtw
+#from fastdtw import fastdtw
 
 """
 Returns the confusion matrix and the normalized confusion matrix from a prediction compared to a test set
@@ -165,11 +165,11 @@ def euclidean_dist(y_true, y_pred):
         comp_dist += lab_true[i]**2
     return np.sqrt(dist)
 
-def dtw_dist(y_true, y_pred):
-    y_standard = [0]*y_true.count()[0]
-    standard_dist = fastdtw(y_true['label'], y_standard, dist = 2)[0]
-    distance, path = fastdtw(y_true['label'], y_pred['label'], dist=2)
-    return distance
+#def dtw_dist(y_true, y_pred):
+#    y_standard = [0]*y_true.count()[0]
+#    standard_dist = fastdtw(y_true['label'], y_standard, dist = 2)[0]
+#    distance, path = fastdtw(y_true['label'], y_pred['label'], dist=2)
+#    return distance
 
 
 """
