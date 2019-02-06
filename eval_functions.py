@@ -123,32 +123,6 @@ def basic_evaluate(y_test, y_pred, verbose=0):
     
     return norm_m, p, r, f
 
-#"""
-#Plots the classes variations graph based directly on the labels
-#PREFER THE graph_pred_from_var VERSION IT IS MUCH LIGHTER  
-#"""
-#def graph_predictions(y_true, y_pred, prob):
-#    y_true = y_true.sort_values(by='epoch')
-#    y_pred = y_pred.sort_values(by='epoch')
-#    
-#    fig, ax = plt.subplots()
-#    ax.set_ylim(-0.5,2.5)
-#    ax.set_xlabel('Time (epoch in s)')
-#    ax.set_ylabel('Class')
-##    ax.plot(pd.to_datetime(y_true['epoch'], unit='s'), one_hot_decode(one_hot_encode(y_true.label)), linewidth = 1.5, label = 'Test data', linestyle='--', color='green')
-##    ax.plot(pd.to_datetime(y_pred['epoch'], unit='s'), y_pred.label, linewidth = 1.0, label = 'Prediction', color='red')
-#    ax.plot(y_true['epoch'], one_hot_decode(one_hot_encode(y_true.label)), linewidth = 1.5, label = 'Test data', linestyle='--', color='blue')
-#    ax.plot(y_pred['epoch'], y_pred.label, linewidth = 1.0, label = 'Prediction', color='red')
-#    ax.scatter(y_pred['epoch'], y_pred.label, s = 10, c='red', label = 'Data Point')
-#    ax.legend()
-#    
-#    ax2 = ax.twinx()
-#    ax2.set_ylabel('Trust level')
-#    ax2.set_ylim(0.2,1.2)
-#    ax2.grid(linestyle='--')
-#    ax2.plot(prob['epoch'], prob['prob'], linewidth = 0.5, color='blue')
-#    return
-
 """
 Returns the euclidean distance between two label time series
 It is the square root of the squared errors point by point
@@ -164,13 +138,6 @@ def euclidean_dist(y_true, y_pred):
         dist += (lab_true[i] - lab_pred[i])**2
         comp_dist += lab_true[i]**2
     return np.sqrt(dist)
-
-#def dtw_dist(y_true, y_pred):
-#    y_standard = [0]*y_true.count()[0]
-#    standard_dist = fastdtw(y_true['label'], y_standard, dist = 2)[0]
-#    distance, path = fastdtw(y_true['label'], y_pred['label'], dist=2)
-#    return distance
-
 
 """
 We want to study the influence of parameters that are external to the training on the results of
@@ -387,12 +354,12 @@ def graph_rho_x(var, data_name = ''):
     return
 
 """
-Plots the graph of classes transitions from a true variations list and a predicted variations list.
+Plots the graph of classes transitions from a variations list.
 
-true_var, pred_var : pandas.DataFrame with columns 'epoch', 'pred_class', 'follow_class'
+var : pandas.DataFrame with columns 'epoch', 'pred_class', 'follow_class'
 data_name : name of the prediction dataset for the plot title
 """
-def graph_label_from_var(var):
+def graph_label_from_var(var, data_name = ''):
     fig, ax = plt.subplots()
     ax.set_ylim(-0.5,2.5)
     ax.set_xlabel('Time (epoch in s)')
@@ -414,10 +381,16 @@ def graph_label_from_var(var):
 #    ax.plot(pd.to_datetime(toplot[0], unit='s'),toplot[1], linewidth = 2, color = 'red')
     ax.plot(toplot[0],toplot[1], linewidth = 1, color = 'red')
     ax.set_ylim(-0.5,2.5)
-    fig.suptitle('\nLabel representation')
+    fig.suptitle(data_name+'\nLabel representation')
     plt.show()
     return
 
+
+"""
+Addition to graph_label_from_var()
+Draws transparent colored rectangles over the plot corresponding to the classes 
+predictions in a variations list
+"""
 import matplotlib.patches as patches
 def patches_from_var(var):
     n = var.count()[0]
@@ -431,7 +404,12 @@ def patches_from_var(var):
         rect = patches.Rectangle((curr_epoch,0), next_epoch-curr_epoch, 2, facecolor=colors[int(follow_class)], alpha = 0.2)
         plt.axis.add_patch(rect)
         
+"""
+Plots the graph of classes transitions from a true variations list and a predicted variations list.
 
+true_var, pred_var : pandas.DataFrame with columns 'epoch', 'pred_class', 'follow_class'
+data_name : name of the prediction dataset for the plot title
+"""
 def graph_pred_from_var(true_var, pred_var, data_name=''):
     fig, ax = plt.subplots()
     ax.set_ylim(-0.5,2.5)
@@ -589,7 +567,12 @@ def f_from_crossings(cross_true, cross_pred, Dt):
     if acc==0 and rec == 0:
         return 0
     return 2*acc*rec/(acc+rec)
-        
+
+"""
+Plots the accuracy, recall and f-measure of an algorithm predction versus a test set
+according to the tolerance Dt
+Parameters : 2 crossings list as returned by data_handling.crossings_from_var()
+"""        
 def plot_cross_stats(cross_true, cross_pred, data_name=''):
     x_data = []
     acc = []
@@ -615,6 +598,7 @@ def plot_cross_stats(cross_true, cross_pred, data_name=''):
 
 """
 Plots a 2D histogram of shocks locations
+Parameter1 : 1 crossings list as returned by data_handling.crossings_from_var()
 Interesting cmap : 
     'rocket'
     'mako'
@@ -687,7 +671,8 @@ def param_distrib_on_closest(final_crossings, param_name, nb_samples, val_abs=Tr
     g.fig.subplots_adjust(hspace=-0.7)
 
 """
-Similar to histogram with variations, but with shocks
+Time distribution of predicted crossings around test set crossings
+Parameters : 2 crossings list as returned by data_handling.crossings_from_var()
 """
 def graph_hist_shocks(sh_true, sh_pred, data_name = ''):
     to_plot = []

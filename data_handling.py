@@ -109,7 +109,7 @@ Args :
     new_totels : name of the additional totels column
 """
 #NE MARCHE PAS ACTUELLEMENT
-def compute_totel(data, totels_col, new_totels):
+def compute_totels(data, totels_col, new_totels):
     totels_1 = data[totels_col]
     roll_tot = totels_1.rolling(75).mean() #moyenne glissante sur 300 secondes donc 75 points de donnée
     shift_pos = roll_tot.shift(30)
@@ -145,6 +145,10 @@ Deals with missing data by filling NaN with the median
 BUT depending on the class
 
 ATTENTION: need to sort values by epoch after applying this function
+
+ex:
+    timed_data = dat.fillna_by_class(timed_data)
+    timed_data = timed_data.sort_values('epoch')
 """
 def fillna_by_class(timed_data):
     labels = timed_data['label'].unique()
@@ -560,7 +564,7 @@ def get_closest_var_by_cat(true_var,pred_var):
         for j in range(tn):
             if pred_var['category'].iloc[i] == true_var['category'].iloc[j]:
                 dt = pred_var['epoch'].iloc[i] - true_var['epoch'].iloc[j]
-            elif pred_var['category'].iloc[i] == 0.5:
+            elif pred_var['category'].iloc[i] == 0.5: #a changer en -1 aussi dans les fonctions d'eval                
                 dt = pred_var['epoch'].iloc[i] - true_var['epoch'].iloc[j]
             if abs(dt)<abs(min_dt):
                 min_dt = dt
@@ -580,6 +584,11 @@ Corrects a variations list to reduce the number of quick oscillations by applyin
 var : pandas.DataFrame with at least the columns 'epoch', 'prec_class' and 'follow_class'
 Dt  : time interval to consider in seconds
 """
+
+# =============================================================================
+# OUTDATED
+# =============================================================================
+
 def corrected_var(var, Dt):
     epoch_to_skip = []
     i = 0
@@ -605,6 +614,10 @@ def corrected_var(var, Dt):
         i = i+1+furthest
     clean_var = var.loc[~var['epoch'].isin(epoch_to_skip)]
     return clean_var
+
+# =============================================================================
+# 
+# =============================================================================
 
 """
 Prend une liste de variations et renvoie les labels aux epochs demandées
@@ -706,6 +719,7 @@ It returns shocks from cross_ref that also appear in cross_other, with the timin
 A crossing is considered common if it appears in the two lists with dates separated by less than dt
 If a crossing from a list corresponds to more than one other in the other list, it will appear twice in the common list
 """
+#A FINIR, ne fonctionne pas encore vraiment
 def get_common_cross(cross_ref, cross_other, dt):
     common = pd.DataFrame(columns = cross_ref.columns)
     for i in range(cross_ref.count().max()):
@@ -719,43 +733,47 @@ def get_common_cross(cross_ref, cross_other, dt):
 If some crossings are separated by less than Dt in crossings, they become a new one at Dt/2
 The crossings have to be merged only if they have the same direction
 """
-"""
-OUTDATED
-def group_crossings_on_dir(cross_1dir,Dt):
-    new_cross = []    
-    ep = cross_1dir['epoch'].tolist()
-    i=0
-    while i<len(ep):
-        j = 1
-        t_lim = ep[i] + Dt
-        curr_t = ep[i]
-        to_add = [curr_t]
-        while i+j<len(ep)-2 and (ep[i+j] < t_lim) :
-            to_add.append(ep[i+j])
-            j = j+1
-        if(len(to_add)>0):
-            new_cross.append(sum(to_add)/len(to_add))
-        i = i+j
-    return new_cross
 
-def group_cross(cross, Dt, on_dir = True):
-    if on_dir:
-        inbound = cross.loc[cross['direction'] == 0]
-        outbound = cross.loc[cross['direction'] == 1]
-        new_ep_i = group_crossings_on_dir(inbound, Dt)
-        new_ep_o = group_crossings_on_dir(outbound, Dt)
-        dir_i = [0]*len(new_ep_i)
-        dir_o = [1]*len(new_ep_o)
-        new_cross = pd.DataFrame()
-        new_cross['epoch'] = new_ep_i + new_ep_o
-        new_cross['direction'] = dir_i + dir_o
-        new_cross = new_cross.sort_values(by='epoch')
-    else:
-        new_cross = pd.DataFrame()
-        new_cross['epoch'] = group_crossings_on_dir(cross, Dt)
-        new_cross['direction'] = new_cross['epoch'].count()*[0]
-    return new_cross
-"""
+# =============================================================================
+# OUTDATED
+# =============================================================================
+#def group_crossings_on_dir(cross_1dir,Dt):
+#    new_cross = []    
+#    ep = cross_1dir['epoch'].tolist()
+#    i=0
+#    while i<len(ep):
+#        j = 1
+#        t_lim = ep[i] + Dt
+#        curr_t = ep[i]
+#        to_add = [curr_t]
+#        while i+j<len(ep)-2 and (ep[i+j] < t_lim) :
+#            to_add.append(ep[i+j])
+#            j = j+1
+#        if(len(to_add)>0):
+#            new_cross.append(sum(to_add)/len(to_add))
+#        i = i+j
+#    return new_cross
+#
+#def group_cross(cross, Dt, on_dir = True):
+#    if on_dir:
+#        inbound = cross.loc[cross['direction'] == 0]
+#        outbound = cross.loc[cross['direction'] == 1]
+#        new_ep_i = group_crossings_on_dir(inbound, Dt)
+#        new_ep_o = group_crossings_on_dir(outbound, Dt)
+#        dir_i = [0]*len(new_ep_i)
+#        dir_o = [1]*len(new_ep_o)
+#        new_cross = pd.DataFrame()
+#        new_cross['epoch'] = new_ep_i + new_ep_o
+#        new_cross['direction'] = dir_i + dir_o
+#        new_cross = new_cross.sort_values(by='epoch')
+#    else:
+#        new_cross = pd.DataFrame()
+#        new_cross['epoch'] = group_crossings_on_dir(cross, Dt)
+#        new_cross['direction'] = new_cross['epoch'].count()*[0]
+#    return new_cross
+# =============================================================================
+# 
+# =============================================================================
 
 """
 Based on a list of crossings and a Dt (sliding window),
