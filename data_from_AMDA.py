@@ -52,8 +52,8 @@ password = 'nirapass'
 """
 Default start and end times
 """
-start_time = '2008-01-03T05:30:00'
-end_time = '2008-01-03T09:30:00'
+start_time = '2008-03-03T05:30:00'
+end_time = '2008-03-03T09:30:00'
 
 #Default scaling data : reduced dataset
 #A CHANGER mais set de Hall trop grand
@@ -225,7 +225,7 @@ time_window : duration of the time window for each download of the data
 For each window, the data where ELS (totels1) is missing is dropped
 A CHANGER surement
 """
-def mex_pred_from_AMDA(model,scale_data,dt_corr, dt_dens, start_time, end_time, time_window, amda_old=True):
+def mex_pred_from_AMDA(model,scale_data,dt_corr, dt_dens, start_time, end_time, time_window, step_files=False, amda_old=False):
     #MEX params in old AMDA
 #    mex_params = ['mex_xyz','mex_h_dens','mex_h_vel','ws_totels_1','ws_totels_6','ws_totels_8','ws_rho_mex','mex_h_qual']
     #MEX params in new AMDA
@@ -257,6 +257,15 @@ def mex_pred_from_AMDA(model,scale_data,dt_corr, dt_dens, start_time, end_time, 
             all_var.append(var_pred)
             all_crossings.append(cross_pred)
             
+            #save a file with the predictions for the current window in case of any bug
+            var_file = './variations_prediction_' + str(curr_time) + '.txt' 
+            cross_file = './crossings_prediction_' + str(curr_time) + '.txt'
+            if step_files : 
+                if(var_pred.count().max()>0):
+                    var_to_AMDA_file(var_pred, var_file)
+                if(cross_pred.count().max()>0):
+                    crossings_to_AMDA_file(cross_pred, cross_file)               
+            
         else:
             print('SKIP WINDOW')
         curr_time = next_time
@@ -278,7 +287,7 @@ def crossings_to_AMDA_file(ref_crossings, filepath):
     crossings['epoch'] = crossings['amda_date']
     crossings = crossings.rename(index=str, columns={"epoch": "time"})
     crossings = crossings.drop('amda_date',axis=1)
-    crossings.to_csv(filepath, sep = ' ', index=False)
+    crossings.to_csv(filepath, sep = ' ',encoding='utf-8', index=False)
 
 """
 Function to to attach data to a variations list and transforms it to a class list with columns [start_time, end_time, label]
@@ -297,7 +306,8 @@ def var_to_AMDA_file(ref_var, filepath):
     new_class['t_start'] = [timestamp_to_AMDAdate(new_class['t_start'].iloc[i]) for i in range(new_class.count().max())]
     new_class['t_end'] = [timestamp_to_AMDAdate(new_class['t_end'].iloc[i]) for i in range(new_class.count().max())]
     new_class['label'] = labels
-    return new_class
+    new_class.to_csv(filepath, sep = ' ',encoding='utf-8', index=False)
+#    return new_class
 """
 Transforms a timestamp to a date readable in AMDA format
 """
@@ -309,12 +319,12 @@ def timestamp_to_AMDAdate(timestamp):
 #"""
 #TEST RUN
 #"""
-#start_time = '2008-01-03T05:30:00'
-#end_time = '2008-01-04T09:30:00'
+start_time = '2008-01-03T05:30:00'
+end_time = '2008-01-04T09:30:00'
 
 scl_data = pd.read_csv(scale_data_path)
 ANN = mdl.load_model(model_path)
-#label_AMDA, var_AMDA, cross_AMDA = mex_pred_from_AMDA(ANN,scl_data.drop('label',axis=1),120,600,start_time,end_time,3600*24, amda_old=False)
+label_AMDA, var_AMDA, cross_AMDA = mex_pred_from_AMDA(ANN,scl_data.drop('label',axis=1),120,600,start_time,end_time,3600*48, amda_old=False)
 #
 #crossings_to_AMDA_file(cross_AMDA,'./TEST_amdacrossfile.txt')
 

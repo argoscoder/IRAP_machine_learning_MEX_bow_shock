@@ -191,10 +191,10 @@ def perf_on_param(param_name, true_data, pred_data, nb_bins):
             acc.append(p[1])
             rec.append(r[1])
             f_meas.append(f[1])  #on prend les stats uniquement pour la classe 1 (choc)
-#        elif i>0:
-#            acc.append(acc[i-1])
-#            rec.append(rec[i-1])
-#            f_meas.append(f_meas[i-1])
+        elif i>0:
+            acc.append(acc[i-1])
+            rec.append(rec[i-1])
+            f_meas.append(f_meas[i-1])
         else:
             acc.append(0) #2 as impossible value
             rec.append(0)
@@ -207,12 +207,6 @@ def perf_on_param(param_name, true_data, pred_data, nb_bins):
     ax.scatter(bins, f_meas, label = 'F-Measure')
     ax.legend()
     return
-
-def bis_perf_on_param(param_name, true_data, pred_data):
-    f, ax = plt.subplots();
-    
-
-
 
 """
 ##################################################################################################################
@@ -586,15 +580,24 @@ def plot_cross_stats(cross_true, cross_pred, data_name=''):
         acc.append(a)
         rec.append(r)
         f_m.append(f)
-    fig, ax = plt.subplots()
-    ax.plot(x_data, acc, color='r', label = 'Accuracy')
-    ax.plot(x_data, rec, color='g', label = 'Recall')
-    ax.plot(x_data, f_m, color='orange', label = 'F-measure')
-    ax.set_xlabel('Dt (seconds)')
-    ax.set_xlim(0,1200)
-    ax.set_ylim(0,1)
-    ax.legend()
-    fig.suptitle(data_name + '\nBasic redefined metrics')
+#    fig, ax = plt.subplots()
+#    ax.plot(x_data, acc, color='r', label = 'Accuracy')
+#    ax.plot(x_data, rec, color='g', label = 'Recall')
+#    ax.plot(x_data, f_m, color='orange', label = 'F-measure')
+#    ax.set_xlabel('Dt (seconds)')
+#    ax.set_xlim(0,1200)
+#    ax.set_ylim(0,1)
+#    ax.legend()
+#    fig.suptitle(data_name + '\nBasic redefined metrics')
+    
+    plt.plot(x_data, acc, color='r', label = 'Accuracy')
+    plt.plot(x_data, rec, color='g', label = 'Recall')
+    plt.plot(x_data, f_m, color='orange', label = 'F-measure')
+    plt.xlabel('Dt (seconds)')
+    plt.xlim(0,1200)
+    plt.ylim(0,1)
+    plt.legend()
+    plt.suptitle(data_name + '\nBasic redefined metrics')
 
 """
 Plots a 2D histogram of shocks locations

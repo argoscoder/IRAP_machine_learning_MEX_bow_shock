@@ -9,6 +9,8 @@ Created on Thu Oct 18 10:46:09 2018
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+from random import shuffle
+import statistics as stat
 from keras.utils import np_utils 
 
 """
@@ -71,6 +73,9 @@ def resample(data, t_sample):
 Takes a DataFrame containing raw data and returns the shocks i to n+i in 
 chronological order as a new DataFrame
 """
+# =============================================================================
+# OUTDATED
+# =============================================================================
 def n_first_shocks(data, n, start_i):
     indexes = []
     nb_int = 0
@@ -91,8 +96,49 @@ def n_first_shocks(data, n, start_i):
         nb_int+=1
     del indexes[-1]
     return data.iloc[indexes]
+# =============================================================================
+# 
+# =============================================================================
     
+"""
+assigns a shock index to each shock in Hall dataset
+Problem-specific
+"""
+def enumerateShocks(data):
+    shock_ind = []
     
+    nb_int=0
+    i=1
+    start_epoch = data['epoch'].iloc[i]
+    n = data.count().max()
+    while i < n -1:
+        j = 0
+        curr_epoch = data['epoch'].iloc[i]
+        start_epoch = data['epoch'].iloc[i-1]
+        while (curr_epoch - start_epoch <= 5) & (j < n-i-1):
+            start_epoch = curr_epoch
+            curr_epoch = data['epoch'].iloc[i+j-1]
+            j+=1
+            
+            shock_ind.append(nb_int)
+        i+=j;
+        nb_int+=1
+    return shock_ind
+
+"""
+Get the shocks by index from n_start to n_end from a DataFrame with a 'shock_index' column
+"""
+def shock_by_index(data, n_start, n_end):
+    return data.loc[(data['shock_ind']>=n_start) & (data['shock_ind']<n_end)] 
+
+"""
+Get n random shocks from data
+"""
+def random_shock_by_index(data, n):
+    n_max = data['shock_ind'].max()
+    ind = [i for i in range(n_max)]
+    shuffle(ind)
+    return data.loc[data['shock_ind'].isin(ind[0:n])]
 
 """
 Computes the totels 6 and 8 for a given data set containing only the totels 1
@@ -227,8 +273,9 @@ Returns the formatted inputs to train/test the ANN from a raw dataFrame
 Also takes as an argument the scaling data to use on the considered data
 """
 def get_inputs(data, scale_data):
-   y = one_hot_encode(data['label'])
-   
+   y = pd.DataFrame()
+   y['epoch'] = data['epoch']
+   y['label'] = data['label']
    X = data.drop(['label','epoch'], axis=1)
    
    
@@ -243,8 +290,7 @@ def get_timed_inputs(data, scale_data):
     X,y = get_inputs(data, scale_data)
     X = pd.DataFrame(X)
     X['epoch'] = data['epoch']
-    y = pd.DataFrame(y)
-    y['epoch'] = data['epoch']
+    return X,y
    
    
 """
@@ -416,6 +462,9 @@ def get_corrected_pred(var_ref, y_timed,timed_proba, Dt):
     corr_lab = []
     n = y_timed.count()[0]
     last_account_index = 0
+    
+    if var_ref.count().max() < 2 : 
+        return y_timed
     
     for i in range(n):
         if(i%10000==0):
@@ -780,27 +829,16 @@ Based on a list of crossings and a Dt (sliding window),
 we define a crossings density based on the number of crossings in each window
 Returns a list of crossings with a new columns
 
-point_rate < Dt/4 pour etre sur de ne pas en rater
-
 Résolution temporelle des chocs
 """
-def crossings_density(y_timed, cross, Dt, points_rate):
+def crossings_density(y_timed, cross, Dt):
     new_y = y_timed.copy()
-    density = []
-    for i in range(int(y_timed.count()[0]/points_rate)+1):
-        mod = y_timed.count()[0]- points_rate*i - 1;
-        if(mod>points_rate):
-            curr_t = y_timed['epoch'].iloc[points_rate*i]
-            n = cross.loc[(cross['epoch']>curr_t - Dt/2) & (cross['epoch']<curr_t + Dt/2)].count()[0]
-            density.extend([n]*points_rate)
-#            print(points_rate*i)
-        else:
-            curr_t = y_timed['epoch'].iloc[i+mod]
-            n = cross.loc[(cross['epoch']>curr_t - Dt/2) & (cross['epoch']<curr_t + Dt/2)].count()[0]
-            density.extend([n]*(1+mod))
-            
-    new_y['density'] = density
+    new_y['density'] = 0
+    for i in range(cross.count()[0]):
+        curr_t = cross.iloc[i]['epoch']
+        new_y.loc[(new_y['epoch'] > curr_t - Dt/2) & (new_y['epoch'] < curr_t + Dt/2),'density'] += 1
     return new_y
+        
 
 """
 Based on a density of crossings, returns a list of dates associated to the peaks and
@@ -827,7 +865,8 @@ def final_list(y_density):
                 interval_degree = deg
             j+=1
         if len(interval_dates)>0:
-            dates.append(sum(interval_dates)/len(interval_dates))
+#            dates.append(sum(interval_dates)/len(interval_dates))
+            dates.append(stat.median(interval_dates))
         else:
             dates.append(curr_t)
         degrees.append(interval_degree)
