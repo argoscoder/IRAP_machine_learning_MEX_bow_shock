@@ -56,19 +56,19 @@ Model training parameters
 Defined as global variables before running the functions below
 """
 run_from_existing = False
-model_load_path = '/home/thibault/Documents/stage_cesure/IRAP/models/model_trainall.h5'
-model_save_path = '/home/thibault/Documents/stage_cesure/IRAP/models/model_trainall_reduced.h5'
+model_load_path = '/home/thibault/Documents/stage_cesure/IRAP/models/model_tr.h5'
+model_save_path = '/home/thibault/Documents/stage_cesure/IRAP/models/model_radnfk.h5'
 
 #layers_sizes = [nb_features,44,22,11,3]
 #layers_activations = ['relu','relu','relu','relu','softmax']
 
-layers_sizes = [nb_features,66,22,3]
+layers_sizes = [nb_features,66,22,nb_class]
 layers_activations = ['relu','relu','relu','softmax']
 
 n_epochs = 20
 batch_size = 256
 val_size = 0
-test_size = 0.2
+test_size = 0.001
 downsampling = 0 #proportion of external classes points to keep in the dataset
 dropout = 0
 
@@ -127,14 +127,14 @@ if random_net :
 #"""
 #Getting the data
 #"""
-data1 = dat.shock_by_index(pd.read_csv(data_path),0,1000)
+data1 = pd.read_csv(data_path).median()
 
 
 #data = pd.concat(dat.shock_by_index(data,0,250),dat.shock_by_index(data,2000,2250),dat.shock_by_index(data,4000,3000),dat.shock_by_index(data,0,3000))
 
 #data2 = pd.read_csv(data_path_red)
 
-data1 = data1.drop('shock_ind', axis=1)
+#data1 = data1.drop('shock_ind', axis=1)
 
 #if nb_class == 3:
 #    data = data.replace('EV',0)
@@ -149,10 +149,10 @@ data1 = data1.drop('shock_ind', axis=1)
 #    data = data.replace('SW',4)
     
 #data = pd.concat([data1, data2])
-data = data1
-
-data = dat.fillna_by_class(data)
-data = data.sort_values('epoch')
+#data = data1
+#
+#data = dat.fillna_by_class(data)
+#data = data.sort_values('epoch')
 
 
 """
@@ -212,6 +212,7 @@ Get the corrected prediction
 def get_corrected_prediction(timed_ypred, raw_proba, true_variations, pred_variations):
     timed_ycorr = dat.get_corrected_pred(pred_variations, timed_ypred,raw_proba, dt_corr_pred)
     corr_variations = dat.get_var(timed_ycorr)
+    corr_variations = dat.corrected_var(corr_variations, 15) #deletes variations faster than 15s
     corr_variations = dat.get_closest_var_by_cat(true_variations, dat.get_category(corr_variations))
     
 #    timed_ycorr = dat.append_data_to_timed(timed_ycorr, data, ['x', 'y', 'z', 'rho'])  
