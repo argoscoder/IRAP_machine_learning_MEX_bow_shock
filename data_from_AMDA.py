@@ -320,7 +320,7 @@ def timestamp_to_AMDAdate(timestamp):
 #TEST RUN
 #"""
 start_time = '2008-01-03T05:30:00'
-end_time = '2008-01-04T09:30:00'
+end_time = '2008-01-03T09:30:00'
 
 scl_data = pd.read_csv(scale_data_path)
 ANN = mdl.load_model(model_path)
