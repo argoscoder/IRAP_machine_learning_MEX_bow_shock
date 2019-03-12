@@ -56,7 +56,7 @@ def pred_from_unseen(model, unseen_data, scale_data, dt_corr, dt_density):
     vcorr = dat.corrected_var(vcorr, 15) #deletes variations faster than 15s
     corr_crossings = dat.crossings_from_var(vcorr)
 
-    corr_pred = dat.crossings_density(corr_crossings, dt_density,int(dt_density/10))
+    corr_pred = dat.crossings_density(corr_pred, corr_crossings, dt_density)
     final_crossings = dat.final_list(corr_pred)
     return corr_pred, vcorr, final_crossings
     
