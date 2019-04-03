@@ -46,8 +46,8 @@ get_param_url = 'http://amda.irap.omp.eu/php/rest/getParameter.php'
 """
 Username and password
 """
-username = 'noel'
-password = 'nirapass'
+username = 'xxx'
+password = 'xxx'
 
 """
 Default start and end times
